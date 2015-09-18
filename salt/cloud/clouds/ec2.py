@@ -3207,7 +3207,6 @@ def list_nodes(call=None):
         ret[node] = {
             'id': nodes[node]['id'],
             'image': nodes[node]['image'],
-            'name': nodes[node]['name'],
             'size': nodes[node]['size'],
             'state': nodes[node]['state'],
             'private_ips': nodes[node]['private_ips'],
