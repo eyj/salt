@@ -1953,10 +1953,10 @@ install_ubuntu_daily() {
 
 install_ubuntu_git() {
     if [ -f "${__SALT_GIT_CHECKOUT_DIR}/salt/syspaths.py" ]; then
-        python setup.py install --install-layout=deb --salt-config-dir="$_SALT_ETC_DIR" || \
-            python setup.py --salt-config-dir="$_SALT_ETC_DIR" install --install-layout=deb || return 1
+        python setup.py -q install --install-layout=deb --salt-config-dir="$_SALT_ETC_DIR" || \
+            python setup.py -q --salt-config-dir="$_SALT_ETC_DIR" install --install-layout=deb || return 1
     else
-        python setup.py install --install-layout=deb || return 1
+        python setup.py -q install --install-layout=deb || return 1
     fi
     return 0
 }
