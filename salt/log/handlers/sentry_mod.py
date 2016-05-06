@@ -115,24 +115,12 @@ def setup_handlers():
     options = {}
     dsn = get_config_value('dsn')
     if dsn is not None:
-        try:
-            dsn_config = raven.load(dsn)
-            options.update({
-                'project': dsn_config['SENTRY_PROJECT'],
-                'servers': dsn_config['SENTRY_SERVERS'],
-                'public_key': dsn_config['SENTRY_PUBLIC_KEY'],
-                'secret_key': dsn_config['SENTRY_SECRET_KEY']
-            })
-        except ValueError as exc:
-            log.info(
-                'Raven failed to parse the configuration provided '
-                'DSN: {0}'.format(exc)
-            )
+        options['dsn'] = dsn
 
     # Allow options to be overridden if previously parsed, or define them
     for key in ('project', 'servers', 'public_key', 'secret_key'):
         config_value = get_config_value(key)
-        if config_value is None and key not in options:
+        if config_value is None and key not in options and not dsn:
             log.debug(
                 'The required \'sentry_handler\' configuration key, '
                 '{0!r}, is not properly configured. Not configuring '
