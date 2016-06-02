@@ -45,6 +45,7 @@ from __future__ import absolute_import
 
 # Import Python libs
 import logging
+import six
 
 # Import Salt libs
 import salt.utils.jid
