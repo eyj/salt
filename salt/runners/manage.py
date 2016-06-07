@@ -30,6 +30,30 @@ from salt.exceptions import SaltClientError
 FINGERPRINT_REGEX = re.compile(r'^([a-f0-9]{2}:){15}([a-f0-9]{2})$')
 
 
+def _ping(tgt, expr_form, timeout):
+    client = salt.client.get_local_client(__opts__['conf_file'])
+    pub_data = client.run_job(tgt, 'test.ping', (), expr_form, '', timeout, '')
+
+    if not pub_data:
+        return pub_data
+
+    returned = set()
+    for fn_ret in client.get_cli_event_returns(
+            pub_data['jid'],
+            pub_data['minions'],
+            client._get_timeout(timeout),
+            tgt,
+            expr_form):
+
+        if fn_ret:
+            for mid, _ in six.iteritems(fn_ret):
+                returned.add(mid)
+
+    not_returned = set(pub_data['minions']) - returned
+
+    return list(returned), list(not_returned)
+
+
 def status(output=True, tgt='*', expr_form='glob'):
     '''
     Print the status of all known salt minions
@@ -42,19 +66,8 @@ def status(output=True, tgt='*', expr_form='glob'):
         salt-run manage.status tgt="webservers" expr_form="nodegroup"
     '''
     ret = {}
-    client = salt.client.get_local_client(__opts__['conf_file'])
-    try:
-        minions = client.cmd(tgt, 'test.ping', timeout=__opts__['timeout'],
-                             expr_form=expr_form)
-    except SaltClientError as client_error:
-        print(client_error)
-        return ret
 
-    key = salt.key.Key(__opts__)
-    keys = key.list_keys()
-
-    ret['up'] = sorted(minions)
-    ret['down'] = sorted(set(keys['minions']) - set(minions))
+    ret['up'], ret['down'] = _ping(tgt, expr_form, __opts__['timeout'])
     return ret
 
 
