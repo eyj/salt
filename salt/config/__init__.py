@@ -862,6 +862,9 @@ VALID_OPTS = {
 
     # Extra modules for Salt Thin
     'thin_extra_mods': str,
+
+    # Minion de-dup jid cache max size
+    'minion_jid_queue_hwm': int,
 }
 
 # default configurations
@@ -1085,6 +1088,7 @@ DEFAULT_MINION_OPTS = {
     # ZMQ HWM for EventPublisher pub socket - different for minion vs. master
     'event_publisher_pub_hwm': 1000,
     'event_match_type': 'startswith',
+    'minion_jid_queue_hwm': 100,
 }
 
 DEFAULT_MASTER_OPTS = {

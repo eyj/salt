@@ -727,6 +727,7 @@ class MultiMinion(MinionBase):
         super(MultiMinion, self).__init__(opts)
         self.auth_wait = self.opts['acceptance_wait_time']
         self.max_auth_wait = self.opts['acceptance_wait_time_max']
+        self.jid_queue = []
 
         if HAS_ZMQ:
             zmq.eventloop.ioloop.install()
@@ -802,6 +803,7 @@ class MultiMinion(MinionBase):
                                 False,
                                 io_loop=self.io_loop,
                                 loaded_base_name='salt.loader.{0}'.format(opts['master']),
+                                jid_queue=self.jid_queue,
                                 )
                 yield minion.connect_master()
                 minion.tune_in(start=False)
@@ -836,7 +838,7 @@ class Minion(MinionBase):
     This class instantiates a minion, runs connections for a minion,
     and loads all of the functions into the minion
     '''
-    def __init__(self, opts, timeout=60, safe=True, loaded_base_name=None, io_loop=None):  # pylint: disable=W0231
+    def __init__(self, opts, timeout=60, safe=True, loaded_base_name=None, io_loop=None, jid_queue=None):  # pylint: disable=W0231
         '''
         Pass in the options dict
         '''
@@ -850,6 +852,7 @@ class Minion(MinionBase):
         self.loaded_base_name = loaded_base_name
         self.connected = False
         self.restart = False
+        self.jid_queue = jid_queue
 
         if io_loop is None:
             if HAS_ZMQ:
@@ -1208,6 +1211,16 @@ class Minion(MinionBase):
                 'Executing command {0[fun]} with jid {0[jid]}'.format(data)
             )
         log.debug('Command details {0}'.format(data))
+
+        # Don't duplicate jobs
+        log.debug('Started JIDs: {0}'.format(self.jid_queue))
+        if self.jid_queue is not None:
+            if data['jid'] in self.jid_queue:
+                return
+            else:
+                self.jid_queue.append(data['jid'])
+                if len(self.jid_queue) > self.opts['minion_jid_queue_hwm']:
+                    self.jid_queue.pop(0)
 
         if isinstance(data['fun'], six.string_types):
             if data['fun'] == 'sys.reload_modules':
