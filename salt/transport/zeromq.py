@@ -22,6 +22,7 @@ import salt.payload
 import salt.transport.client
 import salt.transport.server
 import salt.transport.mixins.auth
+import salt.ext.six as six
 from salt.exceptions import SaltReqTimeoutError
 
 import zmq
@@ -158,7 +159,7 @@ class AsyncZeroMQReqChannel(salt.transport.client.ReqChannel):
         )
         key = self.auth.get_keys()
         cipher = PKCS1_OAEP.new(key)
-        if 'key' not in ret:
+        if isinstance(ret, six.string_types) or 'key' not in ret:
             # Reauth in the case our key is deleted on the master side.
             yield self.auth.authenticate()
             ret = yield self.message_client.send(
