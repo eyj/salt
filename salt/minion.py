@@ -852,7 +852,7 @@ class Minion(MinionBase):
         self.loaded_base_name = loaded_base_name
         self.connected = False
         self.restart = False
-        self.jid_queue = jid_queue
+        self.jid_queue = jid_queue or []
 
         if io_loop is None:
             if HAS_ZMQ:
