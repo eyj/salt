@@ -50,6 +50,7 @@ import datetime
 import logging
 import json
 import sys
+import time
 import email.mime.multipart
 
 log = logging.getLogger(__name__)
@@ -574,7 +575,14 @@ def get_scaling_policy_arn(as_group, scaling_policy_name, region=None,
         salt '*' boto_asg.get_scaling_policy_arn mygroup mypolicy
     '''
     conn = _get_conn(region=region, key=key, keyid=keyid, profile=profile)
-    policies = conn.get_all_policies(as_group=as_group)
+    try:
+        policies = conn.get_all_policies(as_group=as_group)
+    except boto.exception.BotoServerError as e:
+        if e.error_code != 'Throttling':
+            raise
+        time.sleep(2)
+        policies = conn.get_all_policies(as_group=as_group)
+
     for policy in policies:
         if policy.name == scaling_policy_name:
             return policy.policy_arn
