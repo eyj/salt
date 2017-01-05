@@ -97,8 +97,15 @@ def returner(ret):
 
         return False
 
-    def get_message():
-        return 'func: {}, jid: {}'.format(ret['fun'], ret['jid'])
+    def get_message(ret):
+        if not ret.get('fun_args'):
+            return 'salt func: {}'.format(ret['fun'])
+        arg_string = ' '.join([arg for arg in ret['fun_args'] if isinstance(arg, six.string_types)])
+        kwargs = ret['fun_args'][-1]
+        kwarg_string = ''
+        if isinstance(kwargs, dict):
+            kwarg_string = ' '.join(sorted(['{}={}'.format(k, v) for k, v in kwargs.items() if not k.startswith('_')]))
+        return 'salt func: {} {} {}'.format(ret['fun'], arg_string, kwarg_string).strip()
 
     def connect_sentry(message, result):
         '''
@@ -167,7 +174,7 @@ def returner(ret):
             )
 
     try:
-        connect_sentry(get_message(), ret)
+        connect_sentry(get_message(ret), ret)
     except Exception as err:
         logger.error(
             'Can\'t run connect_sentry: {0}'.format(err),
