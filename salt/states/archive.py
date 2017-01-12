@@ -345,14 +345,13 @@ def extracted(name,
 
         log.debug('%s is not in cache, downloading it', source_match)
 
-        file_result = __salt__['state.single']('file.managed',
-                                               filename,
-                                               source=source_match,
-                                               source_hash=source_hash,
-                                               makedirs=True,
-                                               skip_verify=skip_verify,
-                                               saltenv=__env__,
-                                               source_hash_name=source_hash_name)
+        file_result = __states__['file.managed'](filename,
+                                                 source=source_match,
+                                                 source_hash=source_hash,
+                                                 makedirs=True,
+                                                 skip_verify=skip_verify,
+                                                 env=__env__,
+                                                 source_hash_name=source_hash_name)
         log.debug('file.managed: {0}'.format(file_result))
         # get value of first key
         try:
